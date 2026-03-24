@@ -7,12 +7,6 @@
 body{margin:0;font-family:Arial,sans-serif;color:var(--text);background:linear-gradient(180deg,var(--bg1),var(--bg2));min-height:100vh}
 header{text-align:center;padding:18px 12px;font-size:24px;font-weight:700;background:rgba(0,0,0,.25);box-shadow:var(--shadow)}
 .page{max-width:1100px;margin:0 auto;padding:18px}
-
-.firebase-help{background:rgba(250,204,21,.16);border:1px solid rgba(250,204,21,.28);color:#fef08a;padding:12px 14px;border-radius:16px;margin-bottom:14px}
-.auth-bar{display:flex;justify-content:space-between;align-items:center;gap:14px;flex-wrap:wrap;background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:14px;margin-bottom:18px;box-shadow:var(--shadow)}
-.auth-title{font-size:14px;font-weight:800;color:#bfdbfe}
-.auth-status{font-size:14px;color:var(--muted);margin-top:4px}
-.auth-actions{display:flex;gap:10px;flex-wrap:wrap}
 .summary-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:18px}
 .summary-box{background:var(--panel);border:1px solid rgba(255,255,255,.08);border-radius:var(--radius);padding:14px;text-align:center;box-shadow:var(--shadow)}
 .summary-box div:first-child{font-size:15px}
@@ -300,3 +294,27 @@ button:hover{background:var(--green-dark);color:#fff}
 .theme-matrix { --bg1:#000000; --bg2:#001100; --text:#00ff00; --panel:rgba(0,255,0,0.05); }
 .theme-sunset { --bg1:#1e1b4b; --bg2:#7c2d12; --text:#fde68a; --panel:rgba(251,191,36,0.08); }
 .theme-ice { --bg1:#0c4a6e; --bg2:#082f49; --text:#e0f2fe; --panel:rgba(125,211,252,0.08); }
+
+
+/* Cloud sync / auth */
+.auth-panel{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:14px;
+  padding:14px 16px;
+  border-radius:20px;
+  background:var(--panel);
+  border:1px solid rgba(255,255,255,.08);
+  box-shadow:var(--shadow);
+  margin-bottom:16px;
+}
+.auth-panel-left{display:grid;gap:6px;min-width:0}
+.auth-title{font-size:18px;font-weight:800}
+.auth-status{color:#bfdbfe;font-weight:700}
+.auth-help{color:var(--muted);font-size:13px;line-height:1.4}
+.auth-actions{display:flex;gap:10px;flex-wrap:wrap}
+@media (max-width:700px){
+  .auth-panel{flex-direction:column;align-items:stretch}
+  .auth-actions{flex-direction:column}
+}

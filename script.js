@@ -1,52 +1,14 @@
 
-const STORAGE_SCOPE = 'psykopatkontroll';
-let currentUser = null;
-let activeStoragePrefix = 'guest';
+let items = JSON.parse(localStorage.getItem('matlista') || '[]');
+let quickItems = JSON.parse(localStorage.getItem('matlista_snabb') || '[]');
+let recipes = JSON.parse(localStorage.getItem('matlista_recept') || '[]');
 
-function getScopedStorageKey(key) {
-  return `${STORAGE_SCOPE}:${activeStoragePrefix}:${key}`;
-}
-
-function getStoredJson(key, fallback) {
-  try {
-    const raw = localStorage.getItem(getScopedStorageKey(key));
-    return raw ? JSON.parse(raw) : fallback;
-  } catch {
-    return fallback;
-  }
-}
-
-function getStoredText(key, fallback = '') {
-  const raw = localStorage.getItem(getScopedStorageKey(key));
-  return raw ?? fallback;
-}
-
-function setStoredJson(key, value) {
-  localStorage.setItem(getScopedStorageKey(key), JSON.stringify(value));
-}
-
-function setStoredText(key, value) {
-  localStorage.setItem(getScopedStorageKey(key), String(value));
-}
-
-function getAuthDisplayName(user) {
-  return user?.displayName || user?.email || 'Inloggad';
-}
-
-function setStoragePrefixForUser(user = null) {
-  activeStoragePrefix = user?.uid ? `user:${user.uid}` : 'guest';
-}
-
-let items = getStoredJson('matlista', []);
-let quickItems = getStoredJson('matlista_snabb', []);
-let recipes = getStoredJson('matlista_recept', []);
-
-let categories = getStoredJson('matlista_categories', null);
+let categories = JSON.parse(localStorage.getItem('matlista_categories') || 'null');
 if (!Array.isArray(categories) || !categories.length) {
   categories = ['MAT'];
 }
 
-let places = getStoredJson('matlista_places', null);
+let places = JSON.parse(localStorage.getItem('matlista_places') || 'null');
 if (!Array.isArray(places) || !places.length) {
   places = [
     { key: 'kyl', label: '🧊 Kyl' },
@@ -76,11 +38,11 @@ let showQuick = true;
 let showHome = true;
 let showBuy = true;
 let showRecipes = true;
-let homeOpenState = getStoredJson('homeOpenState', {});
+let homeOpenState = JSON.parse(localStorage.getItem('homeOpenState') || '{}');
 let recipeDraftItems = [];
 let currentRecipeMissing = [];
-let recipeIngredientChoices = getStoredJson('matlista_recipe_choices', {});
-let householdSize = Math.max(1, Number(getStoredText('matlista_household_size', 1) || 1));
+let recipeIngredientChoices = JSON.parse(localStorage.getItem('matlista_recipe_choices') || '{}');
+let householdSize = Math.max(1, Number(localStorage.getItem('matlista_household_size') || 1));
 let editingIngredientIndex = null;
 let editingIngredientRecipeIndex = null;
 let selectedAddQuickIndex = null;
@@ -326,8 +288,8 @@ function setRecipeIngredientChoice(recipeName, ingredientName, value) {
   const key = getRecipeChoiceKey(recipeName, ingredientName);
   if (value) recipeIngredientChoices[key] = value;
   else delete recipeIngredientChoices[key];
-  setStoredJson('matlista_recipe_choices', recipeIngredientChoices);
-  setStoredText('matlista_household_size', householdSize);
+  localStorage.setItem('matlista_recipe_choices', JSON.stringify(recipeIngredientChoices));
+  localStorage.setItem('matlista_household_size', String(householdSize));
 }
 
 function clearRecipeChoicesForRecipe(recipeName) {
@@ -335,8 +297,8 @@ function clearRecipeChoicesForRecipe(recipeName) {
   Object.keys(recipeIngredientChoices).forEach(key => {
     if (key.startsWith(prefix)) delete recipeIngredientChoices[key];
   });
-  setStoredJson('matlista_recipe_choices', recipeIngredientChoices);
-  setStoredText('matlista_household_size', householdSize);
+  localStorage.setItem('matlista_recipe_choices', JSON.stringify(recipeIngredientChoices));
+  localStorage.setItem('matlista_household_size', String(householdSize));
 }
 
 function getRecipeReplacementOptions(ingredient) {
@@ -503,108 +465,6 @@ function getPlaceMeta(place) {
   };
 }
 
-
-function resetRuntimeState() {
-  editingIndex = null;
-  editingQuick = false;
-  homeOpenState = getStoredJson('homeOpenState', {});
-  recipeDraftItems = [];
-  currentRecipeMissing = [];
-  recipeIngredientChoices = getStoredJson('matlista_recipe_choices', {});
-  householdSize = Math.max(1, Number(getStoredText('matlista_household_size', 1) || 1));
-  editingIngredientIndex = null;
-  editingIngredientRecipeIndex = null;
-  selectedAddQuickIndex = null;
-  draggedItemIndex = null;
-  draggedItemSource = null;
-  holdAddTriggered = false;
-}
-
-function loadScopedAppData() {
-  items = getStoredJson('matlista', []);
-  quickItems = getStoredJson('matlista_snabb', []);
-  recipes = getStoredJson('matlista_recept', []);
-  categories = getStoredJson('matlista_categories', null);
-  places = getStoredJson('matlista_places', null);
-  weekPlanner = getStoredJson('matlista_weekplanner', {});
-  selectedWeekDay = getStoredText('matlista_weekplanner_selected', getTodayWeekKey()) || getTodayWeekKey();
-  resetRuntimeState();
-  hydrateData();
-  ensureWeekPlannerShape();
-}
-
-function updateAuthUI() {
-  const loginBtn = document.getElementById('googleLoginBtn');
-  const logoutBtn = document.getElementById('googleLogoutBtn');
-  const status = document.getElementById('authStatus');
-  const help = document.getElementById('firebaseHelp');
-
-  if (status) {
-    status.textContent = currentUser
-      ? `Inloggad som ${getAuthDisplayName(currentUser)}`
-      : 'Inte inloggad';
-  }
-
-  if (loginBtn) loginBtn.style.display = currentUser ? 'none' : '';
-  if (logoutBtn) logoutBtn.style.display = currentUser ? '' : 'none';
-  if (help) help.style.display = window.firebase ? 'none' : '';
-}
-
-function applyAuthState(user) {
-  currentUser = user || null;
-  setStoragePrefixForUser(currentUser);
-  loadScopedAppData();
-  updateAuthUI();
-  render();
-}
-
-function initGoogleAuth() {
-  const hasFirebase = typeof window.firebase !== 'undefined';
-  const hasConfig = !!(window.firebaseConfig && window.firebaseConfig.apiKey);
-
-  if (!hasFirebase || !hasConfig) {
-    setStoragePrefixForUser(null);
-    loadScopedAppData();
-    updateAuthUI();
-    render();
-    return;
-  }
-
-  if (!firebase.apps.length) {
-    firebase.initializeApp(window.firebaseConfig);
-  }
-
-  firebase.auth().onAuthStateChanged(user => {
-    applyAuthState(user || null);
-  });
-}
-
-async function loginWithGoogle() {
-  if (typeof window.firebase === 'undefined' || !window.firebaseConfig) {
-    alert('Firebase är inte konfigurerat än. Lägg till firebase-config.js först.');
-    return;
-  }
-
-  try {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-    await firebase.auth().signInWithPopup(provider);
-  } catch (error) {
-    console.error(error);
-    alert('Google-login misslyckades: ' + (error?.message || 'okänt fel'));
-  }
-}
-
-async function logoutGoogle() {
-  if (typeof window.firebase === 'undefined' || !firebase.auth) return;
-  try {
-    await firebase.auth().signOut();
-  } catch (error) {
-    console.error(error);
-    alert('Kunde inte logga ut: ' + (error?.message || 'okänt fel'));
-  }
-}
-
 function hydrateData() {
   items = Array.isArray(items) ? items : [];
   quickItems = Array.isArray(quickItems) ? quickItems : [];
@@ -662,14 +522,14 @@ function hydrateData() {
 }
 
 function save() {
-  setStoredJson('matlista', items);
-  setStoredJson('matlista_snabb', quickItems);
-  setStoredJson('matlista_recept', recipes);
-  setStoredJson('matlista_categories', categories);
-  setStoredJson('matlista_places', places);
-  setStoredJson('homeOpenState', homeOpenState);
-  setStoredJson('matlista_recipe_choices', recipeIngredientChoices);
-  setStoredText('matlista_household_size', householdSize);
+  localStorage.setItem('matlista', JSON.stringify(items));
+  localStorage.setItem('matlista_snabb', JSON.stringify(quickItems));
+  localStorage.setItem('matlista_recept', JSON.stringify(recipes));
+  localStorage.setItem('matlista_categories', JSON.stringify(categories));
+  localStorage.setItem('matlista_places', JSON.stringify(places));
+  localStorage.setItem('homeOpenState', JSON.stringify(homeOpenState));
+  localStorage.setItem('matlista_recipe_choices', JSON.stringify(recipeIngredientChoices));
+  localStorage.setItem('matlista_household_size', String(householdSize));
 }
 
 function syncQuickItemFromItem(changedItem) {
@@ -2562,10 +2422,14 @@ document.addEventListener('click', event => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  initGoogleAuth();
+  hydrateData();
+  householdSize = Math.max(1, Math.min(8, Number(householdSize || 1)));
+  renderCategoryOptions();
+  renderPlaceOptions();
   updateSizeSelect('itemSize', document.getElementById('itemUnit')?.value || 'st');
   updateSizeSelect('editSize', document.getElementById('editUnit')?.value || 'st');
   updateSizeSelect('ingredientEditSize', document.getElementById('ingredientEditUnit')?.value || 'st', null, getRecipeIngredientContext(document.getElementById('ingredientEditName')?.value || ''));
+  render();
 });
 
 
@@ -2579,8 +2443,8 @@ const WEEK_DAYS = [
   { key: 'sun', short: 'Sön', long: 'Söndag' }
 ];
 
-let weekPlanner = getStoredJson('matlista_weekplanner', {});
-let selectedWeekDay = getStoredText('matlista_weekplanner_selected', getTodayWeekKey()) || getTodayWeekKey();
+let weekPlanner = JSON.parse(localStorage.getItem('matlista_weekplanner') || '{}');
+let selectedWeekDay = localStorage.getItem('matlista_weekplanner_selected') || getTodayWeekKey();
 
 function getTodayWeekKey() {
   const day = new Date().getDay();
@@ -2612,8 +2476,8 @@ function ensureWeekPlannerShape() {
 
 function saveWeekPlannerState() {
   ensureWeekPlannerShape();
-  setStoredJson('matlista_weekplanner', weekPlanner);
-  setStoredText('matlista_weekplanner_selected', selectedWeekDay);
+  localStorage.setItem('matlista_weekplanner', JSON.stringify(weekPlanner));
+  localStorage.setItem('matlista_weekplanner_selected', selectedWeekDay);
 }
 
 function getWeekPlan(dayKey = selectedWeekDay) {

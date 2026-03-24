@@ -12,18 +12,22 @@
 </header>
 
   <div class="page">
-    <div id="firebaseHelp" class="firebase-help">För Google-login: skapa en fil som heter <strong>firebase-config.js</strong> i samma mapp och lägg in din Firebase-konfiguration.</div>
-
-    <section class="auth-bar">
-      <div>
-        <div class="auth-title">🔐 Konto</div>
+    
+    <section class="auth-panel">
+      <div class="auth-panel-left">
+        <div class="auth-title">🔐 Konto & molnsynk</div>
         <div id="authStatus" class="auth-status">Inte inloggad</div>
+        <div id="firebaseHelp" class="auth-help">
+          Lägg till <strong>firebase-config.js</strong>, aktivera <strong>Google</strong> i Firebase Authentication
+          och skapa <strong>Firestore Database</strong> för att slå på molnsynk.
+        </div>
       </div>
       <div class="auth-actions">
         <button type="button" id="googleLoginBtn" onclick="loginWithGoogle()">Logga in med Google</button>
         <button type="button" id="googleLogoutBtn" class="ghost-btn" onclick="logoutGoogle()" style="display:none;">Logga ut</button>
       </div>
     </section>
+
     <div class="summary-bar">
       <div class="summary-box"><div>Varor hemma</div><strong id="homeCount">0</strong></div>
       <div class="summary-box"><div>Varor att köpa</div><strong id="buyCount">0</strong></div>
@@ -305,9 +309,11 @@
     </div>
   </div>
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
   <script src="firebase-config.js"></script>
+  <script src="cloud-sync.js"></script>
   <script src="script.js"></script>
 </body>
 </html>
